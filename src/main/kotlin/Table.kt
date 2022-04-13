@@ -1,1 +1,0 @@
-data class Table(val columns: List<String>, val data: List<List<Double>>)
