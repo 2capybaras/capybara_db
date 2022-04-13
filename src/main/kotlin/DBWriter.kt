@@ -1,7 +1,9 @@
 import DBConfiguration.delimiter
 import Utils.numberGenerator
+import java.io.BufferedWriter
 import java.io.File
-import java.util.*
+import java.io.FileOutputStream
+import java.io.FileWriter
 import kotlin.collections.ArrayList
 
 
@@ -26,6 +28,14 @@ object DBWriter {
                 data.add(numberGenerator())
             }
             writer.write(data.joinToString(separator = delimiter, postfix = "\n" ))
+        }
+        writer.close()
+    }
+
+    fun writeTableContinuous(file: File, DBTable: DBTable) {
+        val writer = BufferedWriter(FileWriter(file, true))
+        DBTable.data.forEach {
+            writer.write(it.joinToString(separator = delimiter, postfix = "\n"))
         }
         writer.close()
     }

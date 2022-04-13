@@ -12,5 +12,5 @@ class QLDrop(qlData: QLData): QLTerminate(qlData)
 
 class QLCreate(qlData: QLData): QLTerminate(qlData)
 
-class QLSelect(val qlRange: QLRange, qlData: QLData): QLTerminate(qlData)
+class QLSelect(val peek: List<String>, qlData: QLData, val qlRange: QLRange): QLTerminate(qlData)
 

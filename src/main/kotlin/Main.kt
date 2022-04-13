@@ -13,7 +13,10 @@ fun main(args: Array<String>) {
 //    writeRandomData(File("tables/example3"), 5)
 //    val table2 = readTable(File("tables/example3"))
 //    println(getStringRowByIndex(table2, 2))
-    val tkn = QLSimpleExpressionParser("SELECT * FROM example").parseExpression()
-    execute(tkn as QLTerminate)
+    val tkn = QLExpressionParser("SELECT * FROM example FROM 2 TO 3").parseTerminate()
+    execute(tkn)
+    execute(QLExpressionParser("CREATE example4(A, B, C)").parseTerminate())
+    execute(QLExpressionParser("INSERT example4 RANDOM").parseTerminate())
+    execute(QLExpressionParser("DROP example4").parseTerminate())
 }
 
