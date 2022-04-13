@@ -1,3 +1,5 @@
+package ql
+
 import db.DBConfiguration.noFilter
 import db.DBTable
 

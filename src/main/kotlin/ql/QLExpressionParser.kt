@@ -1,14 +1,5 @@
 package ql
 
-import QLCreate
-import QLData
-import QLDoubleRange
-import QLDrop
-import QLFilter
-import QLInsert
-import QLRange
-import QLSelect
-import QLTerminate
 import utils.Utils.numberGenerator
 import db.DBTable
 import java.text.ParseException
@@ -40,10 +31,10 @@ class QLExpressionParser(str: String) {
     }
 
     private fun parseFilter(): QLFilter {
-        if (tokens[idx] == "WHERE") {
+        return if (tokens[idx] == "WHERE") {
             idx++
-            return QLFilter(tokens[idx++], parseDoubleRange())
-        } else return QLFilter(range = parseDoubleRange())
+            QLFilter(tokens[idx++], parseDoubleRange())
+        } else QLFilter(range = parseDoubleRange())
     }
 
     private fun parseJoin(): QLData {

@@ -5,6 +5,7 @@ import db.DBReader.readTable
 import db.DBTable
 import db.DBWriter.writeTable
 import db.DBWriter.writeTableContinuous
+import ql.*
 import java.io.File
 
 fun getStringRowByIndex(DBTable: DBTable, idx: Int): String {
