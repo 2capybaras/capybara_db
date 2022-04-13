@@ -21,17 +21,40 @@ class QLExpressionParser(str: String) {
         return when (str) {
             "CREATE" -> QLCreate(parseTableWithoutFrom())
             "INSERT" -> QLInsert(mergeTableValues(parseTableWithoutFrom(), parseValues()))
-            "SELECT" -> QLSelect(parseColumns(), parseTable(), parseRange())
+            "SELECT" -> QLSelect(parseColumns(), parseJoin(), parseFilter())
             "DROP" -> QLDrop(parseTableWithoutFrom())
             else -> throw ParseException("Bad terminate token", idx)
         }
     }
 
+    private fun parseFilter(): QLFilter {
+        if (tokens[idx] == "WHERE") {
+            idx++
+            return QLFilter(tokens[idx++], parseDoubleRange())
+        } else return QLFilter(range = parseDoubleRange())
+    }
+
+    private fun parseJoin(): QLData {
+        return parseTable()
+    }
+    
     private fun parseRange(): QLRange {
         if (idx == tokens.size) return QLRange()
         if (tokens[idx] == "FROM" && tokens[idx+2] == "TO") {
             idx++
             return QLRange(tokens[idx++].toInt()-1, tokens[++idx].toInt())
+        } else if (tokens[idx] == "INDEX" && idx+1 < tokens.size) {
+            return QLRange(tokens[++idx].toInt()-1, tokens[idx].toInt())
+        }
+        else throw ParseException("Bad range token", idx)
+    }
+    private fun parseDoubleRange(): QLDoubleRange {
+        if (idx == tokens.size) return QLDoubleRange()
+        return if (tokens[idx] == "FROM" && tokens[idx+2] == "TO") {
+            idx++
+            QLDoubleRange(tokens[idx++].toDouble(), tokens[++idx].toDouble())
+        } else if (tokens[idx] == "INDEX" && idx+1 < tokens.size) {
+            QLDoubleRange(tokens[++idx].toDouble(), tokens[idx].toDouble())
         } else throw ParseException("Bad range token", idx)
     }
 

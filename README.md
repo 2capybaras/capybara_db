@@ -17,8 +17,10 @@
   сегменту базы, без чтения всего файла.
 
 ```text
-SELECT * FROM example
-SELECT RANGE(1, 10) FROM example
-INSERT INTO example RANDOM
-SELECT INDEX(1) FROM example
+INSERT example RANDOM
+SELECT * FROM example INDEX 1
+SELECT * FROM example FROM 2 TO 3
+SELECT * FROM example WHERE A FROM 2.0 TO 4.0
+CREATE example(A, B, C)
+DROP example
 ```

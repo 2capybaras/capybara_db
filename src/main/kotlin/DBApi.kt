@@ -1,4 +1,5 @@
 import DBConfiguration.delimiter
+import DBConfiguration.noFilter
 import DBConfiguration.path
 import DBReader.readTable
 import DBWriter.writeTable
@@ -15,16 +16,28 @@ fun getStringRowByIndex(DBTable: DBTable, idx: Int): String {
     return builder.toString()
 }
 
-fun select(qlData: QLData, qlRange: QLRange) {
+fun select(qlData: QLData, qlFilter: QLFilter) {
     val table = readTable(File(path + qlData.data.name))
     val columns = table.columns
     val data = table.data
     val sb = StringBuilder()
     sb.append(columns.joinToString(separator = delimiter, postfix = "\n"))
-    data.drop(qlRange.a)
-        .take(qlRange.b - qlRange.a)
-        .forEach {
-        sb.append(it.joinToString(separator = delimiter, postfix = "\n" ))
+
+    if (qlFilter.column == noFilter) {
+        val a = qlFilter.range.a.toInt()
+        val b = qlFilter.range.b.toInt()
+        data.drop(a)
+            .take(b - a)
+            .forEach {
+                sb.append(it.joinToString(separator = delimiter, postfix = "\n"))
+            }
+    } else {
+        val a = qlFilter.range.a
+        val b = qlFilter.range.b
+        val pos = columns.indexOf(qlFilter.column)
+        data.filter { it[pos] in a..b }.forEach {
+            sb.append(it.joinToString(separator = delimiter, postfix = "\n"))
+        }
     }
     println(sb.toString())
 }
@@ -44,7 +57,7 @@ fun drop(table: DBTable) {
 fun execute(tkn: QLTerminate) {
     when (tkn) {
         is QLSelect -> {
-            select(tkn.qlData, tkn.qlRange)
+            select(tkn.qlData, tkn.qlFilter)
         }
         is QLCreate -> {
             create(tkn.qlData.data)
