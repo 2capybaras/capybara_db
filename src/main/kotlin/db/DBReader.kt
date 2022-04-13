@@ -1,4 +1,6 @@
-import DBConfiguration.delimiter
+package db
+
+import db.DBConfiguration.delimiter
 import java.io.File
 
 object DBReader {

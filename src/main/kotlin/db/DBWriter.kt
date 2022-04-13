@@ -1,8 +1,9 @@
-import DBConfiguration.delimiter
-import Utils.numberGenerator
+package db
+
+import db.DBConfiguration.delimiter
+import utils.Utils.numberGenerator
 import java.io.BufferedWriter
 import java.io.File
-import java.io.FileOutputStream
 import java.io.FileWriter
 import kotlin.collections.ArrayList
 

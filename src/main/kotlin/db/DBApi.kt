@@ -1,9 +1,10 @@
-import DBConfiguration.delimiter
-import DBConfiguration.noFilter
-import DBConfiguration.path
-import DBReader.readTable
-import DBWriter.writeTable
-import DBWriter.writeTableContinuous
+import db.DBConfiguration.delimiter
+import db.DBConfiguration.noFilter
+import db.DBConfiguration.path
+import db.DBReader.readTable
+import db.DBTable
+import db.DBWriter.writeTable
+import db.DBWriter.writeTableContinuous
 import java.io.File
 
 fun getStringRowByIndex(DBTable: DBTable, idx: Int): String {

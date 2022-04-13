@@ -1,4 +1,16 @@
-import Utils.numberGenerator
+package ql
+
+import QLCreate
+import QLData
+import QLDoubleRange
+import QLDrop
+import QLFilter
+import QLInsert
+import QLRange
+import QLSelect
+import QLTerminate
+import utils.Utils.numberGenerator
+import db.DBTable
 import java.text.ParseException
 
 class QLExpressionParser(str: String) {
@@ -42,9 +54,9 @@ class QLExpressionParser(str: String) {
         if (idx == tokens.size) return QLRange()
         if (tokens[idx] == "FROM" && tokens[idx+2] == "TO") {
             idx++
-            return QLRange(tokens[idx++].toInt()-1, tokens[++idx].toInt())
+            return QLRange(tokens[idx++].toInt() - 1, tokens[++idx].toInt())
         } else if (tokens[idx] == "INDEX" && idx+1 < tokens.size) {
-            return QLRange(tokens[++idx].toInt()-1, tokens[idx].toInt())
+            return QLRange(tokens[++idx].toInt() - 1, tokens[idx].toInt())
         }
         else throw ParseException("Bad range token", idx)
     }
@@ -54,7 +66,7 @@ class QLExpressionParser(str: String) {
             idx++
             QLDoubleRange(tokens[idx++].toDouble(), tokens[++idx].toDouble())
         } else if (tokens[idx] == "INDEX" && idx+1 < tokens.size) {
-            QLDoubleRange(tokens[++idx].toDouble(), tokens[idx].toDouble())
+            QLDoubleRange(tokens[++idx].toDouble()-1, tokens[idx].toDouble())
         } else throw ParseException("Bad range token", idx)
     }
 

@@ -1,4 +1,5 @@
-import DBConfiguration.noFilter
+import db.DBConfiguration.noFilter
+import db.DBTable
 
 sealed class QLToken
 
