@@ -114,13 +114,14 @@ class QLExpressionParser(str: String) {
 
     private fun parseColumns(): List<String> {
         val columns = ArrayList<String>()
+        if (idx >= tokens.size) return columns
         if (tokens[idx] == "*") {
             idx++
             return columns
         }
-        columns += tokens[idx++]
+        columns += tokens[idx++].substringBefore(',')
         while (idx < tokens.size && tokens[idx].endsWith(",")) columns += tokens[idx++]
-        if (columns.last().endsWith(",")) columns += tokens[idx++]
+        if (tokens[idx-1].endsWith(",")) columns += tokens[idx++]
         return columns
     }
 }

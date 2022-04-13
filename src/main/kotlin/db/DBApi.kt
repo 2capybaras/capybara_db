@@ -79,8 +79,12 @@ private fun hashJoin(table: DBTable, table2: DBTable, columns: List<String>, str
             curr.add(row[i])
         }
         if (map[curr].orEmpty().isNotEmpty()) {
+            val rowUniq = ArrayList<Double>()
+            for (i in row.indices) {
+                if (!table2IndexesOfKeys.contains(i)) rowUniq.add(row[i])
+            }
             stringBuilder.append(map[curr]!!.joinToString(separator = delimiter, postfix = delimiter)
-                    + row.joinToString(separator = delimiter, postfix = "\n"))
+                    + rowUniq.joinToString(separator = delimiter, postfix = "\n"))
         }
     }
 }
