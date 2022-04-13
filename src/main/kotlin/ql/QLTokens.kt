@@ -5,7 +5,9 @@ import db.DBTable
 
 sealed class QLToken
 
-class QLData(val data: DBTable): QLToken()
+open class QLData(val data: DBTable): QLToken()
+
+class QLJoinData(data: DBTable, val data2: DBTable, val columns: List<String>): QLData(data)
 
 class QLFilter(val column: String = noFilter, val range: QLDoubleRange = QLDoubleRange()): QLToken()
 

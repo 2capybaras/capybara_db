@@ -3,6 +3,7 @@ package ql
 import utils.Utils.numberGenerator
 import db.DBTable
 import java.text.ParseException
+import kotlin.io.path.Path
 
 class QLExpressionParser(str: String) {
     private val from = "FROM"
@@ -31,14 +32,24 @@ class QLExpressionParser(str: String) {
     }
 
     private fun parseFilter(): QLFilter {
-        return if (tokens[idx] == "WHERE") {
+        return if (idx < tokens.size && tokens[idx] == "WHERE") {
             idx++
             QLFilter(tokens[idx++], parseDoubleRange())
         } else QLFilter(range = parseDoubleRange())
     }
 
     private fun parseJoin(): QLData {
-        return parseTable()
+        val table = parseTable()
+        return if (idx < tokens.size && tokens[idx] == "JOIN") {
+            idx++
+            val table2 = parseTableWithoutFrom()
+            if (idx < tokens.size && tokens[idx++] == "USING") {
+                val columns = parseColumns()
+                QLJoinData(table.data, table2.data, columns)
+            } else throw ParseException("No key for JOIN", idx)
+
+        } else table
+
     }
     
     private fun parseRange(): QLRange {
@@ -52,7 +63,7 @@ class QLExpressionParser(str: String) {
         else throw ParseException("Bad range token", idx)
     }
     private fun parseDoubleRange(): QLDoubleRange {
-        if (idx == tokens.size) return QLDoubleRange()
+        if (idx >= tokens.size) return QLDoubleRange()
         return if (tokens[idx] == "FROM" && tokens[idx+2] == "TO") {
             idx++
             QLDoubleRange(tokens[idx++].toDouble(), tokens[++idx].toDouble())
@@ -103,9 +114,13 @@ class QLExpressionParser(str: String) {
 
     private fun parseColumns(): List<String> {
         val columns = ArrayList<String>()
-        if (tokens[idx++] == "*") return columns
+        if (tokens[idx] == "*") {
+            idx++
+            return columns
+        }
         columns += tokens[idx++]
-        while (tokens[idx].startsWith(",")) columns += tokens[idx++]
+        while (idx < tokens.size && tokens[idx].endsWith(",")) columns += tokens[idx++]
+        if (columns.last().endsWith(",")) columns += tokens[idx++]
         return columns
     }
 }
