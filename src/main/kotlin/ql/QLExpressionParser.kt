@@ -66,7 +66,7 @@ class QLExpressionParser(str: String) {
         if (idx >= tokens.size) return QLDoubleRange()
         return if (tokens[idx] == "FROM" && tokens[idx+2] == "TO") {
             idx++
-            QLDoubleRange(tokens[idx++].toDouble(), tokens[++idx].toDouble())
+            QLDoubleRange(tokens[idx++].toDouble()-1, tokens[++idx].toDouble())
         } else if (tokens[idx] == "INDEX" && idx+1 < tokens.size) {
             QLDoubleRange(tokens[++idx].toDouble()-1, tokens[idx].toDouble())
         } else throw ParseException("Bad range token", idx)

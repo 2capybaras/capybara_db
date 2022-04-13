@@ -25,5 +25,4 @@ SELECT * FROM example JOIN join USING A
 SELECT * FROM example JOIN join USING A, B
 CREATE example(A, B, C)
 DROP example
-INDEX A FROM example 
 ```

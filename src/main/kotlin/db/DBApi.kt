@@ -34,7 +34,7 @@ fun select(qlData: QLData, qlFilter: QLFilter) {
         hashJoin(table, table2, qlData.columns, sb)
     }
     else {
-        sb.append("\t")
+        sb.append("\n")
         if (qlFilter.column == noFilter) {
             val a = qlFilter.range.a.toInt()
             val b = qlFilter.range.b.toInt()
@@ -44,7 +44,7 @@ fun select(qlData: QLData, qlFilter: QLFilter) {
                     sb.append(it.joinToString(separator = delimiter, postfix = "\n"))
                 }
         } else {
-            val a = qlFilter.range.a
+            val a = qlFilter.range.a + 1
             val b = qlFilter.range.b
             val pos = columns.indexOf(qlFilter.column)
             data.filter { it[pos] in a..b }.forEach {
