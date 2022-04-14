@@ -3,7 +3,6 @@ package ql
 import utils.Utils.numberGenerator
 import db.DBTable
 import java.text.ParseException
-import kotlin.io.path.Path
 
 class QLExpressionParser(str: String) {
     private val from = "FROM"
@@ -27,6 +26,7 @@ class QLExpressionParser(str: String) {
             "INSERT" -> QLInsert(mergeTableValues(parseTableWithoutFrom(), parseValues()))
             "SELECT" -> QLSelect(parseColumns(), parseJoin(), parseFilter())
             "DROP" -> QLDrop(parseTableWithoutFrom())
+            "INDEX" -> QLIndex(parseTableWithoutFrom(), parseOnColumn())
             else -> throw ParseException("Bad terminate token", idx)
         }
     }
@@ -36,6 +36,14 @@ class QLExpressionParser(str: String) {
             idx++
             QLFilter(tokens[idx++], parseDoubleRange())
         } else QLFilter(range = parseDoubleRange())
+    }
+
+    private fun parseOnColumn(): String {
+        if (idx < tokens.size && tokens[idx++] == "ON") {
+            val columns = parseColumns()
+            return columns.first()
+        }
+        throw ParseException("No ON keyword", idx)
     }
 
     private fun parseJoin(): QLData {
@@ -54,13 +62,12 @@ class QLExpressionParser(str: String) {
     
     private fun parseRange(): QLRange {
         if (idx == tokens.size) return QLRange()
-        if (tokens[idx] == "FROM" && tokens[idx+2] == "TO") {
+        return if (tokens[idx] == "FROM" && tokens[idx+2] == "TO") {
             idx++
-            return QLRange(tokens[idx++].toInt() - 1, tokens[++idx].toInt())
+            QLRange(tokens[idx++].toInt() - 1, tokens[++idx].toInt())
         } else if (tokens[idx] == "INDEX" && idx+1 < tokens.size) {
-            return QLRange(tokens[++idx].toInt() - 1, tokens[idx].toInt())
-        }
-        else throw ParseException("Bad range token", idx)
+            QLRange(tokens[++idx].toInt() - 1, tokens[idx].toInt())
+        } else throw ParseException("Bad range token", idx)
     }
     private fun parseDoubleRange(): QLDoubleRange {
         if (idx >= tokens.size) return QLDoubleRange()

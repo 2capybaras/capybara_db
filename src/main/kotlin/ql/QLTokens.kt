@@ -17,6 +17,8 @@ class QLDoubleRange(val a: Double = Double.MIN_VALUE, val b: Double = Double.MAX
 
 open class QLTerminate(val qlData: QLData): QLToken()
 
+class QLIndex(qlData: QLData, val column: String): QLTerminate(qlData)
+
 class QLInsert(qlData: QLData): QLTerminate(qlData)
 
 class QLDrop(qlData: QLData): QLTerminate(qlData)

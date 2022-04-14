@@ -1,3 +1,3 @@
 
-rootProject.name = "shitdb"
+rootProject.name = "database"
 

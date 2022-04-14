@@ -1,31 +1,26 @@
+package db
+
 import db.DBConfiguration.delimiter
 import db.DBConfiguration.noFilter
 import db.DBConfiguration.path
+import db.DBIndex.addIndex
+import db.DBIndex.dropIndexes
+import db.DBIndex.getIndex
+import db.DBIndex.isPresented
+import db.DBReader.readColumns
+import db.DBReader.readRow
 import db.DBReader.readTable
-import db.DBTable
 import db.DBWriter.writeTable
 import db.DBWriter.writeTableContinuous
 import ql.*
 import java.io.File
 
-fun getStringRowByIndex(DBTable: DBTable, idx: Int): String {
-    val rowData = DBTable.data[idx-1]
-    val builder = StringBuilder()
-    for (i in 0 until DBTable.columns.size) {
-        builder.append(DBTable.columns[i])
-        builder.append(": ${rowData[i]}\t")
-    }
-    return builder.toString()
-}
-
 fun select(qlData: QLData, qlFilter: QLFilter) {
-    val table = readTable(File(path + qlData.data.name))
-    var columns = table.columns
-    val data = table.data
     val sb = StringBuilder()
-    sb.append(columns.joinToString(separator = delimiter))
-
     if (qlData is QLJoinData) {
+        val table = readTable(File(path + qlData.data.name))
+        var columns = table.columns
+        sb.append(columns.joinToString(separator = delimiter))
         val table2 = readTable(File(path + qlData.data2.name))
         columns = qlData.columns
         if (!table.columns.containsAll(columns) || !table2.columns.containsAll(columns))
@@ -34,10 +29,14 @@ fun select(qlData: QLData, qlFilter: QLFilter) {
         hashJoin(table, table2, qlData.columns, sb)
     }
     else {
-        sb.append("\n")
         if (qlFilter.column == noFilter) {
             val a = qlFilter.range.a.toInt()
             val b = qlFilter.range.b.toInt()
+            val table = readTable(File(path + qlData.data.name))
+            val columns = table.columns
+            val data = table.data
+            sb.append(columns.joinToString(separator = delimiter))
+            sb.append("\n")
             data.drop(a)
                 .take(b - a)
                 .forEach {
@@ -46,9 +45,26 @@ fun select(qlData: QLData, qlFilter: QLFilter) {
         } else {
             val a = qlFilter.range.a + 1
             val b = qlFilter.range.b
-            val pos = columns.indexOf(qlFilter.column)
-            data.filter { it[pos] in a..b }.forEach {
-                sb.append(it.joinToString(separator = delimiter, postfix = "\n"))
+            if (isPresented(IndexInfo(qlData.data.name, qlFilter.column))) {
+                sb.append("Indexed\n")
+                sb.append(readColumns(File(path+qlData.data.name)).joinToString(separator = delimiter))
+                sb.append("\n")
+                val idx = getIndex(IndexInfo(qlData.data.name, qlFilter.column))
+                idx.entries.filter { it.key in a..b }.forEach {
+                    sb.append(readRow(File(path+qlData.data.name), it.value+1).joinToString(separator = delimiter, postfix = "\n"))
+                }
+
+            } else {
+                val table = readTable(File(path + qlData.data.name))
+                val columns = table.columns
+                val data = table.data
+                sb.append(columns.joinToString(separator = delimiter))
+                sb.append("\n")
+
+                val pos = columns.indexOf(qlFilter.column)
+                data.filter { it[pos] in a..b }.forEach {
+                    sb.append(it.joinToString(separator = delimiter, postfix = "\n"))
+                }
             }
         }
     }
@@ -99,6 +115,20 @@ fun insert(table: DBTable) {
 
 fun drop(table: DBTable) {
     File(path+table.name).delete()
+    for (col in table.columns) {
+        dropIndexes(IndexInfo(table.name, col))
+    }
+}
+
+fun index(tableName: String, column: String) {
+    val table = readTable(File(path + tableName))
+    val indexData = HashMap<Double, Int>()
+    val pos = table.columns.indexOf(column)
+    var i = 0
+    for (row: List<Double> in table.data) {
+        indexData[row[pos]] = i++
+    }
+    addIndex(IndexInfo(tableName, column), indexData)
 }
 
 fun execute(tkn: QLTerminate) {
@@ -114,6 +144,9 @@ fun execute(tkn: QLTerminate) {
         }
         is QLDrop -> {
             drop(tkn.qlData.data)
+        }
+        is QLIndex -> {
+            index(tkn.qlData.data.name, tkn.column)
         }
         else -> {}
     }
