@@ -1,4 +1,6 @@
-## QL examples
+# file_db
+
+## Query Examples
 ```text
 INSERT example RANDOM
 SELECT * FROM example INDEX 1
