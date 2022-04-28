@@ -1,3 +1,4 @@
+## QL examples
 ```text
 INSERT example RANDOM
 SELECT * FROM example INDEX 1

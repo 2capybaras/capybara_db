@@ -69,6 +69,7 @@ class QLExpressionParser(str: String) {
             QLRange(tokens[++idx].toInt() - 1, tokens[idx].toInt())
         } else throw ParseException("Bad range token", idx)
     }
+
     private fun parseDoubleRange(): QLDoubleRange {
         if (idx >= tokens.size) return QLDoubleRange()
         return if (tokens[idx] == "FROM" && tokens[idx+2] == "TO") {
