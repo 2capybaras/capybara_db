@@ -1,4 +1,4 @@
-# file_db
+# capybara_db
 
 ## Query Examples
 ```text
