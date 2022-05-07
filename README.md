@@ -1,5 +1,5 @@
 # capybara_db
-
+![logo](./.github/logo.jpg)
 ## Query Examples
 ```text
 INSERT example RANDOM
