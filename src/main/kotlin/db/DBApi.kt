@@ -14,6 +14,7 @@ import db.DBWriter.writeTable
 import db.DBWriter.writeTableContinuous
 import ql.*
 import java.io.File
+import java.util.TreeMap
 
 fun select(qlData: QLData, qlFilter: QLFilter) {
     val sb = StringBuilder()
@@ -50,8 +51,8 @@ fun select(qlData: QLData, qlFilter: QLFilter) {
                 sb.append(readColumns(File(path+qlData.data.name)).joinToString(separator = delimiter))
                 sb.append("\n")
                 val idx = getIndex(IndexInfo(qlData.data.name, qlFilter.column))
-                idx.entries.filter { it.key in a..b }.forEach {
-                    sb.append(readRow(File(path+qlData.data.name), it.value+1).joinToString(separator = delimiter, postfix = "\n"))
+                idx.entries.filter { it.key in a..b }.flatMap {  it.value }.forEach {
+                    sb.append(readRow(File(path+qlData.data.name), it+1).joinToString(separator = delimiter, postfix = "\n"))
                 }
 
             } else {
@@ -122,11 +123,12 @@ fun drop(table: DBTable) {
 
 fun index(tableName: String, column: String) {
     val table = readTable(File(path + tableName))
-    val indexData = HashMap<Double, Int>()
+    val indexData = TreeMap<Double, ArrayList<Int>>()
     val pos = table.columns.indexOf(column)
     var i = 0
     for (row: List<Double> in table.data) {
-        indexData[row[pos]] = i++
+        if (indexData[row[pos]] == null) indexData[row[pos]] = ArrayList()
+        indexData[row[pos]]?.add(i++)
     }
     addIndex(IndexInfo(tableName, column), indexData)
 }

@@ -1,16 +1,18 @@
 package db
 
+import java.util.TreeMap
+
 object DBIndex {
-    private val indexes = HashMap<IndexInfo, HashMap<Double, Int>>()
+    private val indexes = HashMap<IndexInfo, TreeMap<Double, ArrayList<Int>>>()
     fun dropIndexes(indexInfo: IndexInfo) {
          indexes.remove(indexInfo)
     }
 
-    fun addIndex(indexInfo: IndexInfo, map: HashMap<Double, Int>) {
+    fun addIndex(indexInfo: IndexInfo, map: TreeMap<Double, ArrayList<Int>>) {
         indexes[indexInfo] = map
     }
 
-    fun getIndex(indexInfo: IndexInfo): Map<Double, Int> {
+    fun getIndex(indexInfo: IndexInfo): Map<Double, List<Int>> {
         return indexes[indexInfo].orEmpty()
     }
 
