@@ -116,7 +116,8 @@ class QLExpressionParser(str: String) {
             nameAndColumns.substringBefore('(')
         }
 
-        val columns = nameAndColumns.substringAfter("$name(").substringBefore(')').split(",")
+        var columns = nameAndColumns.substringAfter("$name(").substringBefore(')').split(",")
+        if (nameAndColumns.endsWith(columns[0])) columns = emptyList()
         return QLData(DBTable(name, columns))
     }
 
