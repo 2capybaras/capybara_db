@@ -4,8 +4,9 @@ import db.DBConfiguration.delimiter
 import db.DBConfiguration.noFilter
 import db.DBConfiguration.path
 import db.DBIndex.addIndex
-import db.DBIndex.dropIndexes
+import db.DBIndex.dropIndex
 import db.DBIndex.getIndex
+import db.DBIndex.getTableIndexes
 import db.DBIndex.isPresented
 import db.DBReader.readColumns
 import db.DBReader.readRow
@@ -112,13 +113,14 @@ fun create(table: DBTable) {
 
 fun insert(table: DBTable) {
     writeTableContinuous(File(path + table.name), table)
+    getTableIndexes(table.name).forEach { dropIndex(it) }
 }
 
 fun drop(table: DBTable) {
+    // TODO: add check
     File(path+table.name).delete()
-    for (col in table.columns) {
-        dropIndexes(IndexInfo(table.name, col))
-    }
+    // TODO: add logs
+    getTableIndexes(table.name).forEach { dropIndex(it) }
 }
 
 fun index(tableName: String, column: String) {
