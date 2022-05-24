@@ -13,11 +13,12 @@ import db.DBReader.readRow
 import db.DBReader.readTable
 import db.DBWriter.writeTable
 import db.DBWriter.writeTableContinuous
+import io.ktor.utils.io.*
 import ql.*
 import java.io.File
 import java.util.TreeMap
 
-fun select(qlData: QLData, qlFilter: QLFilter) {
+suspend fun select(qlData: QLData, qlFilter: QLFilter, channel: ByteWriteChannel) {
     val sb = StringBuilder()
     if (qlData is QLJoinData) {
         val table = readTable(File(path + qlData.data.name))
@@ -70,7 +71,7 @@ fun select(qlData: QLData, qlFilter: QLFilter) {
             }
         }
     }
-    println(sb.toString())
+    channel.writeStringUtf8( sb.toString() )
 }
 
 private fun hashJoin(table: DBTable, table2: DBTable, columns: List<String>, stringBuilder: StringBuilder) {
@@ -135,10 +136,10 @@ fun index(tableName: String, column: String) {
     addIndex(IndexInfo(tableName, column), indexData)
 }
 
-fun execute(tkn: QLTerminate) {
+suspend fun execute(tkn: QLTerminate, channel: ByteWriteChannel) {
     when (tkn) {
         is QLSelect -> {
-            select(tkn.qlData, tkn.qlFilter)
+            select(tkn.qlData, tkn.qlFilter, channel)
         }
         is QLCreate -> {
             create(tkn.qlData.data)
