@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.6.20"
+    kotlin("jvm") version "1.7.0"
     application
 }
 
@@ -17,10 +17,15 @@ repositories {
 dependencies {
     implementation("io.ktor:ktor-server-core-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
 }
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 application {
