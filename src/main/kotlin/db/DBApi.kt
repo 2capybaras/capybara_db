@@ -52,7 +52,7 @@ suspend fun select(qlData: QLData, qlFilter: QLFilter, channel: ByteWriteChannel
                 sb.append("Indexed\n")
                 sb.append(readColumns(File(path+qlData.data.name)).joinToString(separator = delimiter))
                 sb.append("\n")
-                val idx = getIndex(IndexInfo(qlData.data.name, qlFilter.column))
+                val idx = getIndex(IndexInfo(qlData.data.name, qlFilter.column))!!
                 idx.entries.filter { it.key in a..b }.flatMap {  it.value }.forEach {
                     sb.append(readRow(File(path+qlData.data.name), it+1).joinToString(separator = delimiter, postfix = "\n"))
                 }
