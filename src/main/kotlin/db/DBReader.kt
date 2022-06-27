@@ -2,6 +2,7 @@ package db
 
 import db.DBConfiguration.delimiter
 import java.io.File
+import java.io.RandomAccessFile
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -11,14 +12,6 @@ interface DBReader {
     fun readColumns(fileName: String): List<String>
 }
 
-/**
- * Simple Layout:
- *
- * table.txt
- * column1, column2, column3
- * 1, 2.3, 3
- * 3.4, 0, 5
- */
 object SimpleLayoutReader: DBReader {
     override fun readTable(fileName: String): DBTable {
         val file = File(fileName)
@@ -59,4 +52,43 @@ object SimpleLayoutReader: DBReader {
         }
         return emptyList()
     }
+}
+
+object PackedLayoutReader: DBReader {
+    override fun readTable(fileName: String): DBTable {
+        val file = File("$fileName.meta")
+        val sc = Scanner(file)
+        val rows = sc.nextLine().toInt()
+        val line = sc.nextLine()
+        val columns = if (line.isNotBlank()) {
+            line.split(",")
+        } else emptyList()
+
+        val dataFile = RandomAccessFile("$fileName.data", "rw")
+        val data: MutableList<List<Double>> = arrayListOf()
+        for (i in 0 until rows) {
+            val row = arrayListOf<Double>()
+            for (j in columns.indices) {
+                row.add(dataFile.readDouble())
+            }
+            data.add(row)
+        }
+        return DBTable(fileName, columns, data)
+    }
+
+    override fun readRow(fileName: String, row: Int): List<Double> {
+        TODO("Not yet implemented")
+    }
+
+    override fun readColumns(fileName: String): List<String> {
+        val file = File("$fileName.meta")
+        val sc = Scanner(file)
+        sc.nextLine()
+        val line = sc.nextLine()
+        if (line.isNotBlank()) {
+            return line.split(",")
+        }
+        return emptyList()
+    }
+
 }
