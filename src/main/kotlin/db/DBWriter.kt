@@ -1,37 +1,39 @@
 package db
 
 import db.DBConfiguration.delimiter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
 import java.io.RandomAccessFile
 
 interface DBWriter {
-    fun writeTable(fileName: String, DBTable: DBTable)
-    fun writeTableContinuous(fileName: String, DBTable: DBTable)
+    suspend fun writeTable(fileName: String, dbTable: DBTable)
+    suspend fun writeTableContinuous(fileName: String, dbTable: DBTable)
 }
 
-object SimpleLayoutWriter: DBWriter {
-    override fun writeTable(fileName: String, DBTable: DBTable) {
+class SimpleLayoutWriter: DBWriter {
+    override suspend fun writeTable(fileName: String, dbTable: DBTable) = withContext(Dispatchers.IO) {
         val writer = File(fileName).bufferedWriter()
-        writer.write(DBTable.columns.joinToString(separator = delimiter, postfix = "\n" ))
-        DBTable.data.forEach {
+        writer.write(dbTable.columns.joinToString(separator = delimiter, postfix = "\n" ))
+        dbTable.data.forEach {
             writer.write(it.joinToString(separator = delimiter, postfix = "\n" ))
         }
         writer.close()
     }
 
-    override fun writeTableContinuous(fileName: String, DBTable: DBTable) {
+    override suspend fun writeTableContinuous(fileName: String, dbTable: DBTable) = withContext(Dispatchers.IO) {
         val writer = BufferedWriter(FileWriter(File(fileName), true))
-        DBTable.data.forEach {
+        dbTable.data.forEach {
             writer.write(it.joinToString(separator = delimiter, postfix = "\n"))
         }
         writer.close()
     }
 }
 
-object PackedLayoutWriter: DBWriter {
-    override fun writeTable(fileName: String, dbTable: DBTable) {
+class PackedLayoutWriter: DBWriter {
+    override suspend fun writeTable(fileName: String, dbTable: DBTable) = withContext(Dispatchers.IO) {
         val dataFile = RandomAccessFile("$fileName.data", "rw")
         dbTable.data.forEach { doubles ->
             doubles.forEach {
@@ -45,7 +47,7 @@ object PackedLayoutWriter: DBWriter {
         writer.close()
     }
 
-    override fun writeTableContinuous(fileName: String, dbTable: DBTable) {
+    override suspend fun writeTableContinuous(fileName: String, dbTable: DBTable) {
         TODO("Not yet implemented")
     }
 

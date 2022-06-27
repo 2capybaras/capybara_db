@@ -16,11 +16,11 @@ interface DBLayout {
  */
 class SimpleLayout: DBLayout {
     override fun getReader(): DBReader {
-        return SimpleLayoutReader
+        return SimpleLayoutReader()
     }
 
     override fun getWriter(): DBWriter {
-        return SimpleLayoutWriter
+        return SimpleLayoutWriter()
     }
 }
 
@@ -42,11 +42,11 @@ class SimpleLayout: DBLayout {
  */
 class PackedLayout: DBLayout {
     override fun getReader(): DBReader {
-        TODO("Not yet implemented")
+        return PackedLayoutReader()
     }
 
     override fun getWriter(): DBWriter {
-        TODO("Not yet implemented")
+        return PackedLayoutWriter()
     }
 
 }

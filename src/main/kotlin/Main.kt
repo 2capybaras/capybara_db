@@ -1,3 +1,4 @@
+import db.PackedLayout
 import db.execute
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
@@ -13,13 +14,16 @@ suspend fun serve() = withContext(Dispatchers.IO) {
     val socket = serverSocket.accept()
     val receiveChannel = socket.openReadChannel()
     val sendChannel = socket.openWriteChannel(autoFlush = true)
+    val layout = PackedLayout()
     println("Started a server.")
     while (true) {
         val answer = receiveChannel.readUTF8Line().orEmpty()
         if (answer.isEmpty()) delay(50)
         else if (answer != "EXIT") {
             try {
-                execute(QLExpressionParser(answer).parseTerminate(), sendChannel)
+                launch(CoroutineName("executing $answer")) {
+                    execute(QLExpressionParser(answer).parseTerminate(), sendChannel, layout)
+                }
             } catch (ex: FileNotFoundException) {
                 println("Server closed a connection: $ex")
                 socket.close()

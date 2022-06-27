@@ -9,6 +9,9 @@ import db.DBIndex.getIndex
 import db.DBIndex.getTableIndexes
 import db.DBIndex.isPresented
 import io.ktor.utils.io.*
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.newSingleThreadContext
+import kotlinx.coroutines.withContext
 import ql.*
 import java.io.File
 import java.util.TreeMap
@@ -103,11 +106,11 @@ private fun hashJoin(table: DBTable, table2: DBTable, columns: List<String>, str
     }
 }
 
-fun create(table: DBTable, writer: DBWriter) {
+suspend fun create(table: DBTable, writer: DBWriter) {
     writer.writeTable((path + table.name), table)
 }
 
-fun insert(table: DBTable, writer: DBWriter) {
+suspend fun insert(table: DBTable, writer: DBWriter) {
     writer.writeTableContinuous((path + table.name), table)
     getTableIndexes(table.name).forEach { dropIndex(it) }
 }
@@ -119,7 +122,8 @@ fun drop(table: DBTable) {
     getTableIndexes(table.name).forEach { dropIndex(it) }
 }
 
-fun index(tableName: String, column: String, reader: DBReader) {
+@OptIn(DelicateCoroutinesApi::class)
+suspend fun index(tableName: String, column: String, reader: DBReader) = withContext(newSingleThreadContext("index")) {
     val table = reader.readTable((path + tableName))
     val indexData = TreeMap<Double, ArrayList<Int>>()
     val pos = table.columns.indexOf(column)

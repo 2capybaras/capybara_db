@@ -12,7 +12,7 @@ interface DBReader {
     fun readColumns(fileName: String): List<String>
 }
 
-object SimpleLayoutReader: DBReader {
+class SimpleLayoutReader: DBReader {
     override fun readTable(fileName: String): DBTable {
         val file = File(fileName)
         val lines = file.readLines()
@@ -54,7 +54,7 @@ object SimpleLayoutReader: DBReader {
     }
 }
 
-object PackedLayoutReader: DBReader {
+class PackedLayoutReader: DBReader {
     override fun readTable(fileName: String): DBTable {
         val file = File("$fileName.meta")
         val sc = Scanner(file)
