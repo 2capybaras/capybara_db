@@ -1,18 +1,18 @@
 package db
 
 import db.DBConfiguration.delimiter
-import utils.Utils.numberGenerator
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
-import kotlin.collections.ArrayList
 
+interface DBWriter {
+    fun writeTable(fileName: String, DBTable: DBTable)
+    fun writeTableContinuous(fileName: String, DBTable: DBTable)
+}
 
-object DBWriter {
-    private val pseudoRandomColumns = listOf("Apple", "Orange", "Mango")
-
-    fun writeTable(file: File, DBTable: DBTable) {
-        val writer = file.bufferedWriter()
+object SimpleLayoutWriter: DBWriter {
+    override fun writeTable(fileName: String, DBTable: DBTable) {
+        val writer = File(fileName).bufferedWriter()
         writer.write(DBTable.columns.joinToString(separator = delimiter, postfix = "\n" ))
         DBTable.data.forEach {
             writer.write(it.joinToString(separator = delimiter, postfix = "\n" ))
@@ -20,21 +20,8 @@ object DBWriter {
         writer.close()
     }
 
-    fun writeRandomData(file: File, rows: Int) {
-        val writer = file.bufferedWriter()
-        writer.write(pseudoRandomColumns.joinToString(separator = delimiter, postfix = "\n" ))
-        for (i in 0 until rows) {
-            val data = ArrayList<Double>()
-            for (j in pseudoRandomColumns.indices) {
-                data.add(numberGenerator())
-            }
-            writer.write(data.joinToString(separator = delimiter, postfix = "\n" ))
-        }
-        writer.close()
-    }
-
-    fun writeTableContinuous(file: File, DBTable: DBTable) {
-        val writer = BufferedWriter(FileWriter(file, true))
+    override fun writeTableContinuous(fileName: String, DBTable: DBTable) {
+        val writer = BufferedWriter(FileWriter(File(fileName), true))
         DBTable.data.forEach {
             writer.write(it.joinToString(separator = delimiter, postfix = "\n"))
         }
