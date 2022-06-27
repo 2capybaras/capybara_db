@@ -2,12 +2,26 @@ package db
 
 import db.DBConfiguration.delimiter
 import java.io.File
-import java.io.IOException
 import java.util.*
 import kotlin.collections.ArrayList
 
-object DBReader {
-    fun readTable(file: File): DBTable {
+interface DBReader {
+    fun readTable(fileName: String): DBTable
+    fun readRow(fileName: String, row: Int): List<Double>
+    fun readColumns(fileName: String): List<String>
+}
+
+/**
+ * Simple Layout:
+ *
+ * table.txt
+ * column1, column2, column3
+ * 1, 2.3, 3
+ * 3.4, 0, 5
+ */
+object SimpleLayoutReader: DBReader {
+    override fun readTable(fileName: String): DBTable {
+        val file = File(fileName)
         val lines = file.readLines()
         val columns = lines[0].split(delimiter)
         val data = ArrayList<List<Double>>()
@@ -18,36 +32,30 @@ object DBReader {
         return DBTable(columns = columns, data = data)
     }
 
-    fun readRow(file: File, row: Int): List<Double> {
-        try {
-            var i = 0
-            val sc = Scanner(file)
-            while (sc.hasNextLine()) {
-                val line = sc.nextLine()
-                if (line.isNotBlank()) {
-                    if (i == row) {
-                        return line.split(delimiter).map { it -> it.toDouble() }
-                    }
-                    i++
+    override fun readRow(fileName: String, row: Int): List<Double> {
+        val file = File(fileName)
+        var i = 0
+        val sc = Scanner(file)
+        while (sc.hasNextLine()) {
+            val line = sc.nextLine()
+            if (line.isNotBlank()) {
+                if (i == row) {
+                    return line.split(delimiter).map { it -> it.toDouble() }
                 }
+                i++
             }
-        } catch (e: IOException) {
-            e.printStackTrace()
         }
         return emptyList()
     }
 
-    fun readColumns(file: File): List<String> {
-        try {
-            val sc = Scanner(file)
-            while (sc.hasNextLine()) {
-                val line = sc.nextLine()
-                if (line.isNotBlank()) {
-                    return line.split(delimiter)
-                }
+    override fun readColumns(fileName: String): List<String> {
+        val file = File(fileName)
+        val sc = Scanner(file)
+        while (sc.hasNextLine()) {
+            val line = sc.nextLine()
+            if (line.isNotBlank()) {
+                return line.split(delimiter)
             }
-        } catch (e: IOException) {
-            e.printStackTrace()
         }
         return emptyList()
     }
