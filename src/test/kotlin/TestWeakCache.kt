@@ -7,8 +7,8 @@ import kotlin.collections.ArrayList
 class TestWeakCache {
     @Test
     fun testWithGC() {
-        val idx: IndexInfo = IndexInfo("test", "test")
-        var map:  TreeMap<Double, ArrayList<Int>>? = TreeMap<Double, ArrayList<Int>>()
+        val idx = IndexInfo("test", "test")
+        var map: TreeMap<Double, ArrayList<Int>>? = TreeMap<Double, ArrayList<Int>>()
         map!![1.0] = ArrayList()
         map[1.0]!!.add(1)
         DBIndex.addIndex(idx, map)

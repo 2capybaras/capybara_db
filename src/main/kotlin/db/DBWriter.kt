@@ -1,43 +1,67 @@
 package db
 
 import db.DBConfiguration.delimiter
-import utils.Utils.numberGenerator
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
-import kotlin.collections.ArrayList
+import java.io.RandomAccessFile
 
+interface DBWriter {
+    suspend fun writeTable(fileName: String, dbTable: DBTable)
+    suspend fun writeTableContinuous(fileName: String, dbTable: DBTable)
+}
 
-object DBWriter {
-    private val pseudoRandomColumns = listOf("Apple", "Orange", "Mango")
-
-    fun writeTable(file: File, DBTable: DBTable) {
-        val writer = file.bufferedWriter()
-        writer.write(DBTable.columns.joinToString(separator = delimiter, postfix = "\n" ))
-        DBTable.data.forEach {
+class SimpleLayoutWriter: DBWriter {
+    override suspend fun writeTable(fileName: String, dbTable: DBTable) = withContext(Dispatchers.IO) {
+        val writer = File(fileName).bufferedWriter()
+        writer.write(dbTable.columns.joinToString(separator = delimiter, postfix = "\n" ))
+        dbTable.data.forEach {
             writer.write(it.joinToString(separator = delimiter, postfix = "\n" ))
         }
         writer.close()
     }
 
-    fun writeRandomData(file: File, rows: Int) {
-        val writer = file.bufferedWriter()
-        writer.write(pseudoRandomColumns.joinToString(separator = delimiter, postfix = "\n" ))
-        for (i in 0 until rows) {
-            val data = ArrayList<Double>()
-            for (j in pseudoRandomColumns.indices) {
-                data.add(numberGenerator())
-            }
-            writer.write(data.joinToString(separator = delimiter, postfix = "\n" ))
-        }
-        writer.close()
-    }
-
-    fun writeTableContinuous(file: File, DBTable: DBTable) {
-        val writer = BufferedWriter(FileWriter(file, true))
-        DBTable.data.forEach {
+    override suspend fun writeTableContinuous(fileName: String, dbTable: DBTable) = withContext(Dispatchers.IO) {
+        val writer = BufferedWriter(FileWriter(File(fileName), true))
+        dbTable.data.forEach {
             writer.write(it.joinToString(separator = delimiter, postfix = "\n"))
         }
         writer.close()
     }
+}
+
+class PackedLayoutWriter: DBWriter {
+    override suspend fun writeTable(fileName: String, dbTable: DBTable) = withContext(Dispatchers.IO) {
+        val dataFile = RandomAccessFile("$fileName.data", "rw")
+        dbTable.data.forEach { doubles ->
+            doubles.forEach {
+                dataFile.writeDouble(it)
+            }
+        }
+
+        val writer = File("$fileName.meta").bufferedWriter()
+        writer.write(dbTable.data.size.toString())
+        writer.write(dbTable.columns.joinToString(separator = ",", prefix = "\n"))
+        writer.close()
+    }
+
+    override suspend fun writeTableContinuous(fileName: String, dbTable: DBTable) = withContext(Dispatchers.IO) {
+        val dataFile = RandomAccessFile("$fileName.data", "rw")
+        dataFile.seek(dataFile.length())
+        dbTable.data.forEach { doubles ->
+            doubles.forEach {
+                dataFile.writeDouble(it)
+            }
+        }
+        val reader = File("$fileName.meta").bufferedReader()
+        val prevRows = reader.readLine().toInt()
+        val columns = reader.readText().split(",")
+        val writer = File("$fileName.meta").bufferedWriter()
+        writer.write((dbTable.data.size+prevRows).toString())
+        writer.write(columns.joinToString(separator = ",", prefix = "\n"))
+        writer.close()
+    }
+
 }

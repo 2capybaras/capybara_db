@@ -1,5 +1,8 @@
 # capybara_db
 ![logo](./.github/logo.jpg)
+
+**Disk-based storage for capybaras.** Packed page layout implementation.
+
 ## Query Examples
 ```text
 INSERT example RANDOM

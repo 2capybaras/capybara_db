@@ -8,23 +8,21 @@ import db.DBIndex.dropIndex
 import db.DBIndex.getIndex
 import db.DBIndex.getTableIndexes
 import db.DBIndex.isPresented
-import db.DBReader.readColumns
-import db.DBReader.readRow
-import db.DBReader.readTable
-import db.DBWriter.writeTable
-import db.DBWriter.writeTableContinuous
 import io.ktor.utils.io.*
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.newSingleThreadContext
+import kotlinx.coroutines.withContext
 import ql.*
 import java.io.File
 import java.util.TreeMap
 
-suspend fun select(qlData: QLData, qlFilter: QLFilter, channel: ByteWriteChannel) {
+suspend fun select(qlData: QLData, qlFilter: QLFilter, channel: ByteWriteChannel, reader: DBReader) {
     val sb = StringBuilder()
     if (qlData is QLJoinData) {
-        val table = readTable(File(path + qlData.data.name))
+        val table = reader.readTable((path + qlData.data.name))
         var columns = table.columns
         sb.append(columns.joinToString(separator = delimiter))
-        val table2 = readTable(File(path + qlData.data2.name))
+        val table2 = reader.readTable((path + qlData.data2.name))
         columns = qlData.columns
         if (!table.columns.containsAll(columns) || !table2.columns.containsAll(columns))
             throw Error("JOIN must have keys presented in both tables")
@@ -35,7 +33,7 @@ suspend fun select(qlData: QLData, qlFilter: QLFilter, channel: ByteWriteChannel
         if (qlFilter.column == noFilter) {
             val a = qlFilter.range.a.toInt()
             val b = qlFilter.range.b.toInt()
-            val table = readTable(File(path + qlData.data.name))
+            val table = reader.readTable((path + qlData.data.name))
             val columns = table.columns
             val data = table.data
             sb.append(columns.joinToString(separator = delimiter))
@@ -50,15 +48,15 @@ suspend fun select(qlData: QLData, qlFilter: QLFilter, channel: ByteWriteChannel
             val b = qlFilter.range.b
             if (isPresented(IndexInfo(qlData.data.name, qlFilter.column))) {
                 sb.append("Indexed\n")
-                sb.append(readColumns(File(path+qlData.data.name)).joinToString(separator = delimiter))
+                sb.append(reader.readColumns((path+qlData.data.name)).joinToString(separator = delimiter))
                 sb.append("\n")
                 val idx = getIndex(IndexInfo(qlData.data.name, qlFilter.column))!!
                 idx.entries.filter { it.key in a..b }.flatMap {  it.value }.forEach {
-                    sb.append(readRow(File(path+qlData.data.name), it+1).joinToString(separator = delimiter, postfix = "\n"))
+                    sb.append(reader.readRow((path+qlData.data.name), it+1).joinToString(separator = delimiter, postfix = "\n"))
                 }
 
             } else {
-                val table = readTable(File(path + qlData.data.name))
+                val table = reader.readTable((path + qlData.data.name))
                 val columns = table.columns
                 val data = table.data
                 sb.append(columns.joinToString(separator = delimiter))
@@ -108,12 +106,12 @@ private fun hashJoin(table: DBTable, table2: DBTable, columns: List<String>, str
     }
 }
 
-fun create(table: DBTable) {
-    writeTable(File(path + table.name), table)
+suspend fun create(table: DBTable, writer: DBWriter) {
+    writer.writeTable((path + table.name), table)
 }
 
-fun insert(table: DBTable) {
-    writeTableContinuous(File(path + table.name), table)
+suspend fun insert(table: DBTable, writer: DBWriter) {
+    writer.writeTableContinuous((path + table.name), table)
     getTableIndexes(table.name).forEach { dropIndex(it) }
 }
 
@@ -124,8 +122,9 @@ fun drop(table: DBTable) {
     getTableIndexes(table.name).forEach { dropIndex(it) }
 }
 
-fun index(tableName: String, column: String) {
-    val table = readTable(File(path + tableName))
+@OptIn(DelicateCoroutinesApi::class)
+suspend fun index(tableName: String, column: String, reader: DBReader) = withContext(newSingleThreadContext("index")) {
+    val table = reader.readTable((path + tableName))
     val indexData = TreeMap<Double, ArrayList<Int>>()
     val pos = table.columns.indexOf(column)
     var i = 0
@@ -136,22 +135,22 @@ fun index(tableName: String, column: String) {
     addIndex(IndexInfo(tableName, column), indexData)
 }
 
-suspend fun execute(tkn: QLTerminate, channel: ByteWriteChannel) {
+suspend fun execute(tkn: QLTerminate, channel: ByteWriteChannel, layout: DBLayout = SimpleLayout()) {
     when (tkn) {
         is QLSelect -> {
-            select(tkn.qlData, tkn.qlFilter, channel)
+            select(tkn.qlData, tkn.qlFilter, channel, layout.getReader())
         }
         is QLCreate -> {
-            create(tkn.qlData.data)
+            create(tkn.qlData.data, layout.getWriter())
         }
         is QLInsert -> {
-            insert(tkn.qlData.data)
+            insert(tkn.qlData.data, layout.getWriter())
         }
         is QLDrop -> {
             drop(tkn.qlData.data)
         }
         is QLIndex -> {
-            index(tkn.qlData.data.name, tkn.column)
+            index(tkn.qlData.data.name, tkn.column, layout.getReader())
         }
         else -> {}
     }
