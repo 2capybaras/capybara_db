@@ -42,13 +42,26 @@ class PackedLayoutWriter: DBWriter {
         }
 
         val writer = File("$fileName.meta").bufferedWriter()
-        writer.write((dbTable.data.size).toString())
+        writer.write(dbTable.data.size.toString())
         writer.write(dbTable.columns.joinToString(separator = ",", prefix = "\n"))
         writer.close()
     }
 
-    override suspend fun writeTableContinuous(fileName: String, dbTable: DBTable) {
-        TODO("Not yet implemented")
+    override suspend fun writeTableContinuous(fileName: String, dbTable: DBTable) = withContext(Dispatchers.IO) {
+        val dataFile = RandomAccessFile("$fileName.data", "rw")
+        dataFile.seek(dataFile.length())
+        dbTable.data.forEach { doubles ->
+            doubles.forEach {
+                dataFile.writeDouble(it)
+            }
+        }
+        val reader = File("$fileName.meta").bufferedReader()
+        val prevRows = reader.readLine().toInt()
+        val columns = reader.readText().split(",")
+        val writer = File("$fileName.meta").bufferedWriter()
+        writer.write((dbTable.data.size+prevRows).toString())
+        writer.write(columns.joinToString(separator = ",", prefix = "\n"))
+        writer.close()
     }
 
 }
