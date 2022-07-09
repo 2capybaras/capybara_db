@@ -140,7 +140,7 @@ suspend fun index(tableName: String, column: String, reader: DBReader) = withCon
     addIndex(IndexInfo(tableName, column), indexData)
 }
 
-suspend fun execute(tkn: QLTerminate, channel: ByteWriteChannel, layout: DBLayout = SimpleLayout()) {
+suspend fun execute(tkn: QLTerminate, channel: ByteWriteChannel, layout: DBLayout = PackedLayout()) {
     when (tkn) {
         is QLSelect -> {
             select(tkn.qlData, tkn.qlFilter, channel, layout.getReader())
