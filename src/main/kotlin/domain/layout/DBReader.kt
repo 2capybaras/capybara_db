@@ -1,20 +1,21 @@
-package db
+package domain.layout
 
-import db.DBConfiguration.packedColumnsDelimiter
-import db.DBConfiguration.simpleColumnsDelimiter
+import config.Config.packedColumnsDelimiter
+import config.Config.simpleColumnsDelimiter
+import domain.model.Table
 import java.io.File
 import java.io.RandomAccessFile
 import java.util.*
 import kotlin.collections.ArrayList
 
 interface DBReader {
-    fun readTable(fileName: String): DBTable
+    fun readTable(fileName: String): Table
     fun readRow(fileName: String, row: Int): List<Double>
     fun readColumns(fileName: String): List<String>
 }
 
 class SimpleLayoutReader: DBReader {
-    override fun readTable(fileName: String): DBTable {
+    override fun readTable(fileName: String): Table {
         val file = File(fileName)
         val lines = file.readLines()
         val columns = lines[0].split(simpleColumnsDelimiter)
@@ -23,7 +24,7 @@ class SimpleLayoutReader: DBReader {
             val values = it.split(simpleColumnsDelimiter).map { s: String -> s.toDouble() }
             data.add(values)
         }
-        return DBTable(columns = columns, data = data)
+        return Table(columns = columns, data = data)
     }
 
     override fun readRow(fileName: String, row: Int): List<Double> {
@@ -56,7 +57,7 @@ class SimpleLayoutReader: DBReader {
 }
 
 class PackedLayoutReader: DBReader {
-    override fun readTable(fileName: String): DBTable {
+    override fun readTable(fileName: String): Table {
         val file = File("$fileName.meta")
         val sc = Scanner(file)
         val rows = sc.nextLine().toInt()
@@ -74,7 +75,7 @@ class PackedLayoutReader: DBReader {
             }
             data.add(row)
         }
-        return DBTable(fileName, columns, data)
+        return Table(fileName, columns, data)
     }
 
     override fun readRow(fileName: String, row: Int): List<Double> {

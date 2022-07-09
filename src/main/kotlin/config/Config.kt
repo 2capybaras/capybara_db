@@ -1,6 +1,6 @@
-package db
+package config
 
-object DBConfiguration {
+object Config {
     const val simpleColumnsDelimiter = "\t"
     const val packedColumnsDelimiter = ","
     const val path = "tables/"

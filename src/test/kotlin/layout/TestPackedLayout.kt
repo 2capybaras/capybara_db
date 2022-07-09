@@ -1,8 +1,8 @@
 package layout
 
-import db.DBTable
-import db.PackedLayoutReader
-import db.PackedLayoutWriter
+import domain.model.Table
+import domain.layout.PackedLayoutReader
+import domain.layout.PackedLayoutWriter
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -19,10 +19,11 @@ class TestPackedLayout {
 
     @Test
     fun testFilesCreated() = runBlocking {
-        writer.writeTable("tables/test", DBTable(
+        writer.writeTable("tables/test", Table(
             columns = cols,
             data = data
-        ))
+        )
+        )
 
         assert(File("tables/test.data").exists())
         assert(File("tables/test.meta").exists())

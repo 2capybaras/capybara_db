@@ -1,6 +1,6 @@
-package utils
+package util
 
-import java.util.*
+import java.util.Random
 
 object Utils {
     private val random = Random()

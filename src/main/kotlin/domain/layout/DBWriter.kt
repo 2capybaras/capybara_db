@@ -1,7 +1,8 @@
-package db
+package domain.layout
 
-import db.DBConfiguration.packedColumnsDelimiter
-import db.DBConfiguration.simpleColumnsDelimiter
+import config.Config.packedColumnsDelimiter
+import config.Config.simpleColumnsDelimiter
+import domain.model.Table
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.BufferedWriter
@@ -10,23 +11,23 @@ import java.io.FileWriter
 import java.io.RandomAccessFile
 
 interface DBWriter {
-    suspend fun writeTable(fileName: String, dbTable: DBTable)
-    suspend fun writeTableContinuous(fileName: String, dbTable: DBTable)
+    suspend fun writeTable(fileName: String, table: Table)
+    suspend fun writeTableContinuous(fileName: String, table: Table)
 }
 
 class SimpleLayoutWriter: DBWriter {
-    override suspend fun writeTable(fileName: String, dbTable: DBTable) = withContext(Dispatchers.IO) {
+    override suspend fun writeTable(fileName: String, table: Table) = withContext(Dispatchers.IO) {
         val writer = File(fileName).bufferedWriter()
-        writer.write(dbTable.columns.joinToString(separator = simpleColumnsDelimiter, postfix = "\n" ))
-        dbTable.data.forEach {
+        writer.write(table.columns.joinToString(separator = simpleColumnsDelimiter, postfix = "\n" ))
+        table.data.forEach {
             writer.write(it.joinToString(separator = simpleColumnsDelimiter, postfix = "\n" ))
         }
         writer.close()
     }
 
-    override suspend fun writeTableContinuous(fileName: String, dbTable: DBTable) = withContext(Dispatchers.IO) {
+    override suspend fun writeTableContinuous(fileName: String, table: Table) = withContext(Dispatchers.IO) {
         val writer = BufferedWriter(FileWriter(File(fileName), true))
-        dbTable.data.forEach {
+        table.data.forEach {
             writer.write(it.joinToString(separator = simpleColumnsDelimiter, postfix = "\n"))
         }
         writer.close()
@@ -34,24 +35,24 @@ class SimpleLayoutWriter: DBWriter {
 }
 
 class PackedLayoutWriter: DBWriter {
-    override suspend fun writeTable(fileName: String, dbTable: DBTable) = withContext(Dispatchers.IO) {
+    override suspend fun writeTable(fileName: String, table: Table) = withContext(Dispatchers.IO) {
         val dataFile = RandomAccessFile("$fileName.data", "rw")
-        dbTable.data.forEach { doubles ->
+        table.data.forEach { doubles ->
             doubles.forEach {
                 dataFile.writeDouble(it)
             }
         }
 
         val writer = File("$fileName.meta").bufferedWriter()
-        writer.write(dbTable.data.size.toString())
-        writer.write(dbTable.columns.joinToString(separator = packedColumnsDelimiter, prefix = "\n"))
+        writer.write(table.data.size.toString())
+        writer.write(table.columns.joinToString(separator = packedColumnsDelimiter, prefix = "\n"))
         writer.close()
     }
 
-    override suspend fun writeTableContinuous(fileName: String, dbTable: DBTable) = withContext(Dispatchers.IO) {
+    override suspend fun writeTableContinuous(fileName: String, table: Table) = withContext(Dispatchers.IO) {
         val dataFile = RandomAccessFile("$fileName.data", "rw")
         dataFile.seek(dataFile.length())
-        dbTable.data.forEach { doubles ->
+        table.data.forEach { doubles ->
             doubles.forEach {
                 dataFile.writeDouble(it)
             }
@@ -60,7 +61,7 @@ class PackedLayoutWriter: DBWriter {
         val prevRows = reader.readLine().toInt()
         val columns = reader.readText().split(packedColumnsDelimiter)
         val writer = File("$fileName.meta").bufferedWriter()
-        writer.write((dbTable.data.size+prevRows).toString())
+        writer.write((table.data.size+prevRows).toString())
         writer.write(columns.joinToString(separator = packedColumnsDelimiter, prefix = "\n"))
         writer.close()
     }

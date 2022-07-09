@@ -1,13 +1,13 @@
-package ql
+package domain.ql
 
-import db.DBConfiguration.noFilter
-import db.DBTable
+import config.Config.noFilter
+import domain.model.Table
 
 sealed interface QLToken
 
-open class QLData(val data: DBTable): QLToken
+open class QLData(val data: Table): QLToken
 
-class QLJoinData(data: DBTable, val data2: DBTable, val columns: List<String>): QLData(data)
+class QLJoinData(data: Table, val data2: Table, val columns: List<String>): QLData(data)
 
 class QLFilter(val column: String = noFilter, val range: QLDoubleRange = QLDoubleRange()): QLToken
 

@@ -1,8 +1,8 @@
 package parser
 
+import domain.ql.ExpressionParser
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import ql.*
 import java.text.ParseException
 
 class TestParserError {
@@ -10,49 +10,49 @@ class TestParserError {
 
     @Test
     fun `fail when no terminate`() {
-        val parser = QLExpressionParser("")
+        val parser = ExpressionParser("")
         assertThrows<ParseException> { parser.parseTerminate() }
     }
 
     @Test
     fun `fail when no valid terminate`() {
-        val parser = QLExpressionParser("DO something FROM $tableName")
+        val parser = ExpressionParser("DO something FROM $tableName")
         assertThrows<ParseException> { parser.parseTerminate() }
     }
 
     @Test
     fun `fail when select without from`() {
-        val parser = QLExpressionParser("SELECT * FROM")
+        val parser = ExpressionParser("SELECT * FROM")
         assertThrows<IndexOutOfBoundsException> { parser.parseTerminate() }
     }
 
     @Test
     fun `fail when select with invalid range`() {
-        val parser = QLExpressionParser("SELECT * FROM $tableName FIRST")
+        val parser = ExpressionParser("SELECT * FROM $tableName FIRST")
         assertThrows<ParseException> { parser.parseTerminate() }
     }
 
     @Test
     fun `fail when index without 'on' keyword`() {
-        val parser = QLExpressionParser("INDEX $tableName a")
+        val parser = ExpressionParser("INDEX $tableName a")
         assertThrows<ParseException> { parser.parseTerminate() }
     }
 
     @Test
     fun `fail when index without columns`() {
-        val parser = QLExpressionParser("INDEX $tableName ON")
+        val parser = ExpressionParser("INDEX $tableName ON")
         assertThrows<NoSuchElementException> { parser.parseTerminate() }
     }
 
     @Test
     fun `fail when insert without values`() {
-        val parser = QLExpressionParser("INSERT $tableName")
+        val parser = ExpressionParser("INSERT $tableName")
         assertThrows<IndexOutOfBoundsException> { parser.parseTerminate() }
     }
 
     @Test
     fun `fail when insert with invalid values`() {
-        val parser = QLExpressionParser("INSERT $tableName RAN")
+        val parser = ExpressionParser("INSERT $tableName RAN")
         assertThrows<ParseException> { parser.parseTerminate() }
     }
 }

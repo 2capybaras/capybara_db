@@ -1,10 +1,10 @@
-import db.PackedLayout
-import db.execute
+import domain.layout.PackedLayout
+import domain.api.execute
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
-import ql.QLExpressionParser
+import domain.ql.ExpressionParser
 import java.io.FileNotFoundException
 import kotlin.system.exitProcess
 
@@ -22,7 +22,7 @@ suspend fun serve() = withContext(Dispatchers.IO) {
         else if (answer != "EXIT") {
             try {
                 launch(CoroutineName("executing $answer")) {
-                    execute(QLExpressionParser(answer).parseTerminate(), sendChannel, layout)
+                    execute(ExpressionParser(answer).parseTerminate(), sendChannel, layout)
                 }
             } catch (ex: FileNotFoundException) {
                 println("Server closed a connection: $ex")

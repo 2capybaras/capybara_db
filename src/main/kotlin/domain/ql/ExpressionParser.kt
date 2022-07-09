@@ -1,10 +1,10 @@
-package ql
+package domain.ql
 
-import utils.Utils.numberGenerator
-import db.DBTable
+import util.Utils.numberGenerator
+import domain.model.Table
 import java.text.ParseException
 
-class QLExpressionParser(str: String) {
+class ExpressionParser(str: String) {
     private val from = "FROM"
     private val tokens = str.split(" ")
     private var idx = 0
@@ -81,12 +81,12 @@ class QLExpressionParser(str: String) {
     }
 
     private fun mergeTableValues(parsedTable: QLData, parsedValues: QLData): QLData {
-        val res = DBTable(parsedTable.data.name, parsedTable.data.columns, parsedValues.data.data)
+        val res = Table(parsedTable.data.name, parsedTable.data.columns, parsedValues.data.data)
         return QLData(res)
     }
 
     private fun parseValues(): QLData {
-        if (tokens[idx++] == "RANDOM") return QLData(DBTable(data = randomData()))
+        if (tokens[idx++] == "RANDOM") return QLData(Table(data = randomData()))
         else throw ParseException("Unexpected values", idx)
     }
 
@@ -118,7 +118,7 @@ class QLExpressionParser(str: String) {
 
         var columns = nameAndColumns.substringAfter("$name(").substringBefore(')').split(",")
         if (nameAndColumns.endsWith(columns[0])) columns = emptyList()
-        return QLData(DBTable(name, columns))
+        return QLData(Table(name, columns))
     }
 
     private fun parseColumns(): List<String> {

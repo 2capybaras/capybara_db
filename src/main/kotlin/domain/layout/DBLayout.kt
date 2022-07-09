@@ -1,4 +1,4 @@
-package db
+package domain.layout
 
 interface DBLayout {
     fun getReader(): DBReader

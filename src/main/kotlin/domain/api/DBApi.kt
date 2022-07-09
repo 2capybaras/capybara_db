@@ -1,18 +1,24 @@
-package db
+package domain.api
 
-import db.DBConfiguration.simpleColumnsDelimiter
-import db.DBConfiguration.noFilter
-import db.DBConfiguration.path
-import db.DBIndex.addIndex
-import db.DBIndex.dropIndex
-import db.DBIndex.getIndex
-import db.DBIndex.getTableIndexes
-import db.DBIndex.isPresented
+import config.Config.simpleColumnsDelimiter
+import config.Config.noFilter
+import config.Config.path
+import domain.model.Table
+import domain.cache.DBIndex.addIndex
+import domain.cache.DBIndex.dropIndex
+import domain.cache.DBIndex.getIndex
+import domain.cache.DBIndex.getTableIndexes
+import domain.cache.DBIndex.isPresented
+import domain.cache.IndexInfo
+import domain.layout.DBLayout
+import domain.layout.DBReader
+import domain.layout.DBWriter
+import domain.layout.PackedLayout
+import domain.ql.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.coroutines.withContext
-import ql.*
 import java.io.File
 import java.util.TreeMap
 
@@ -71,7 +77,7 @@ suspend fun select(qlData: QLData, qlFilter: QLFilter, channel: ByteWriteChannel
     channel.writeStringUtf8( sb.toString() )
 }
 
-private fun hashJoin(table: DBTable, table2: DBTable, columns: List<String>, stringBuilder: StringBuilder) {
+private fun hashJoin(table: Table, table2: Table, columns: List<String>, stringBuilder: StringBuilder) {
     val map = HashMap<List<Double>, List<Double>>()
     val tableIndexesOfKeys = ArrayList<Int>()
     for (key in columns) {
@@ -105,16 +111,16 @@ private fun hashJoin(table: DBTable, table2: DBTable, columns: List<String>, str
     }
 }
 
-suspend fun create(table: DBTable, writer: DBWriter) {
+suspend fun create(table: Table, writer: DBWriter) {
     writer.writeTable((path + table.name), table)
 }
 
-suspend fun insert(table: DBTable, writer: DBWriter) {
+suspend fun insert(table: Table, writer: DBWriter) {
     writer.writeTableContinuous((path + table.name), table)
     getTableIndexes(table.name).forEach { dropIndex(it) }
 }
 
-fun drop(table: DBTable) {
+fun drop(table: Table) {
     // TODO: add check
     File(path+table.name).delete()
     // TODO: add logs
@@ -151,6 +157,5 @@ suspend fun execute(tkn: QLTerminate, channel: ByteWriteChannel, layout: DBLayou
         is QLIndex -> {
             index(tkn.qlData.data.name, tkn.column, layout.getReader())
         }
-        else -> {}
     }
 }
