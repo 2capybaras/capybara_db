@@ -1,12 +1,14 @@
+package cache
+
 import db.DBIndex
 import db.IndexInfo
 import org.junit.jupiter.api.Test
 import java.util.*
 import kotlin.collections.ArrayList
 
-class TestWeakCache {
+class TestIndexCache {
     @Test
-    fun testWithGC() {
+    fun testClearedAfterGC() {
         val idx = IndexInfo("test", "test")
         var map: TreeMap<Double, ArrayList<Int>>? = TreeMap<Double, ArrayList<Int>>()
         map!![1.0] = ArrayList()

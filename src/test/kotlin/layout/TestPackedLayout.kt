@@ -1,8 +1,9 @@
-package testlayout
+package layout
 
 import db.DBTable
 import db.PackedLayoutReader
 import db.PackedLayoutWriter
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertContentEquals
@@ -12,9 +13,13 @@ class TestPackedLayout {
     private val data = listOf(
         listOf(100.0, 2.0)
     )
+
+    private val writer = PackedLayoutWriter()
+    private val reader = PackedLayoutReader()
+
     @Test
-    fun testFilesCreated() {
-        PackedLayoutWriter.writeTable("tables/test", DBTable(
+    fun testFilesCreated() = runBlocking {
+        writer.writeTable("tables/test", DBTable(
             columns = cols,
             data = data
         ))
@@ -24,8 +29,9 @@ class TestPackedLayout {
     }
 
     @Test
-    fun testFilesAreReadable() {
-        val dbTable = PackedLayoutReader.readTable("tables/test")
+    fun testFilesAreReadable() = runBlocking {
+        val dbTable = reader.readTable("tables/test")
+
         assertContentEquals(dbTable.data, data)
         assertContentEquals(dbTable.columns, cols)
     }
