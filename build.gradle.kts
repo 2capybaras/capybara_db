@@ -8,7 +8,7 @@ plugins {
 group = "me.user"
 version = "1.0-SNAPSHOT"
 
-val ktor_version = "2.0.1"
+val ktor_version = "2.0.2"
 
 repositories {
     mavenCentral()
@@ -17,7 +17,9 @@ repositories {
 dependencies {
     implementation("io.ktor:ktor-server-core-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")
+
     testImplementation(kotlin("test"))
+    testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
 }
 
 tasks.withType<KotlinCompile> {
