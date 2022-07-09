@@ -1,6 +1,7 @@
 package db
 
-import db.DBConfiguration.delimiter
+import db.DBConfiguration.packedColumnsDelimiter
+import db.DBConfiguration.simpleColumnsDelimiter
 import java.io.File
 import java.io.RandomAccessFile
 import java.util.*
@@ -16,10 +17,10 @@ class SimpleLayoutReader: DBReader {
     override fun readTable(fileName: String): DBTable {
         val file = File(fileName)
         val lines = file.readLines()
-        val columns = lines[0].split(delimiter)
+        val columns = lines[0].split(simpleColumnsDelimiter)
         val data = ArrayList<List<Double>>()
         lines.drop(1).filter { it.isNotEmpty() }.forEach {
-            val values = it.split(delimiter).map { s: String -> s.toDouble() }
+            val values = it.split(simpleColumnsDelimiter).map { s: String -> s.toDouble() }
             data.add(values)
         }
         return DBTable(columns = columns, data = data)
@@ -33,7 +34,7 @@ class SimpleLayoutReader: DBReader {
             val line = sc.nextLine()
             if (line.isNotBlank()) {
                 if (i == row) {
-                    return line.split(delimiter).map { it -> it.toDouble() }
+                    return line.split(simpleColumnsDelimiter).map { it -> it.toDouble() }
                 }
                 i++
             }
@@ -47,7 +48,7 @@ class SimpleLayoutReader: DBReader {
         while (sc.hasNextLine()) {
             val line = sc.nextLine()
             if (line.isNotBlank()) {
-                return line.split(delimiter)
+                return line.split(simpleColumnsDelimiter)
             }
         }
         return emptyList()
@@ -61,7 +62,7 @@ class PackedLayoutReader: DBReader {
         val rows = sc.nextLine().toInt()
         val line = sc.nextLine()
         val columns = if (line.isNotBlank()) {
-            line.split(",")
+            line.split(packedColumnsDelimiter)
         } else emptyList()
 
         val dataFile = RandomAccessFile("$fileName.data", "rw")
@@ -86,7 +87,7 @@ class PackedLayoutReader: DBReader {
         sc.nextLine()
         val line = sc.nextLine()
         if (line.isNotBlank()) {
-            return line.split(",")
+            return line.split(packedColumnsDelimiter)
         }
         return emptyList()
     }

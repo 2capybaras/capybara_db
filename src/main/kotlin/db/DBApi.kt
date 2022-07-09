@@ -1,6 +1,6 @@
 package db
 
-import db.DBConfiguration.delimiter
+import db.DBConfiguration.simpleColumnsDelimiter
 import db.DBConfiguration.noFilter
 import db.DBConfiguration.path
 import db.DBIndex.addIndex
@@ -21,58 +21,55 @@ suspend fun select(qlData: QLData, qlFilter: QLFilter, channel: ByteWriteChannel
     if (qlData is QLJoinData) {
         val table = reader.readTable((path + qlData.data.name))
         var columns = table.columns
-        sb.append(columns.joinToString(separator = delimiter))
+        sb.append(columns.joinToString(separator = simpleColumnsDelimiter))
         val table2 = reader.readTable((path + qlData.data2.name))
         columns = qlData.columns
         if (!table.columns.containsAll(columns) || !table2.columns.containsAll(columns))
             throw Error("JOIN must have keys presented in both tables")
-        sb.append(table2.columns.filter { it -> !columns.contains(it) }
-            .joinToString(separator = delimiter, prefix = delimiter, postfix = "\n"))
+        sb.append(table2.columns.filter { it -> !columns.contains(it) }.joinToString(separator = simpleColumnsDelimiter, prefix = simpleColumnsDelimiter, postfix = "\n"))
         hashJoin(table, table2, qlData.columns, sb)
-    } else {
+    }
+    else {
         if (qlFilter.column == noFilter) {
             val a = qlFilter.range.a.toInt()
             val b = qlFilter.range.b.toInt()
             val table = reader.readTable((path + qlData.data.name))
             val columns = table.columns
             val data = table.data
-            sb.append(columns.joinToString(separator = delimiter))
+            sb.append(columns.joinToString(separator = simpleColumnsDelimiter))
             sb.append("\n")
             data.drop(a)
                 .take(b - a)
                 .forEach {
-                    sb.append(it.joinToString(separator = delimiter, postfix = "\n"))
+                    sb.append(it.joinToString(separator = simpleColumnsDelimiter, postfix = "\n"))
                 }
         } else {
             val a = qlFilter.range.a + 1
             val b = qlFilter.range.b
             if (isPresented(IndexInfo(qlData.data.name, qlFilter.column))) {
                 sb.append("Indexed\n")
-                sb.append(reader.readColumns((path + qlData.data.name)).joinToString(separator = delimiter))
+                sb.append(reader.readColumns((path+qlData.data.name)).joinToString(separator = simpleColumnsDelimiter))
                 sb.append("\n")
                 val idx = getIndex(IndexInfo(qlData.data.name, qlFilter.column))!!
-                idx.entries.filter { it.key in a..b }.flatMap { it.value }.forEach {
-                    sb.append(
-                        reader.readRow((path + qlData.data.name), it + 1)
-                            .joinToString(separator = delimiter, postfix = "\n")
-                    )
+                idx.entries.filter { it.key in a..b }.flatMap {  it.value }.forEach {
+                    sb.append(reader.readRow((path+qlData.data.name), it+1).joinToString(separator = simpleColumnsDelimiter, postfix = "\n"))
                 }
 
             } else {
                 val table = reader.readTable((path + qlData.data.name))
                 val columns = table.columns
                 val data = table.data
-                sb.append(columns.joinToString(separator = delimiter))
+                sb.append(columns.joinToString(separator = simpleColumnsDelimiter))
                 sb.append("\n")
 
                 val pos = columns.indexOf(qlFilter.column)
                 data.filter { it[pos] in a..b }.forEach {
-                    sb.append(it.joinToString(separator = delimiter, postfix = "\n"))
+                    sb.append(it.joinToString(separator = simpleColumnsDelimiter, postfix = "\n"))
                 }
             }
         }
     }
-    channel.writeStringUtf8(sb.toString())
+    channel.writeStringUtf8( sb.toString() )
 }
 
 private fun hashJoin(table: DBTable, table2: DBTable, columns: List<String>, stringBuilder: StringBuilder) {
@@ -103,10 +100,8 @@ private fun hashJoin(table: DBTable, table2: DBTable, columns: List<String>, str
             for (i in row.indices) {
                 if (!table2IndexesOfKeys.contains(i)) rowUniq.add(row[i])
             }
-            stringBuilder.append(
-                map[curr]!!.joinToString(separator = delimiter, postfix = delimiter)
-                        + rowUniq.joinToString(separator = delimiter, postfix = "\n")
-            )
+            stringBuilder.append(map[curr]!!.joinToString(separator = simpleColumnsDelimiter, postfix = simpleColumnsDelimiter)
+                    + rowUniq.joinToString(separator = simpleColumnsDelimiter, postfix = "\n"))
         }
     }
 }
@@ -122,7 +117,7 @@ suspend fun insert(table: DBTable, writer: DBWriter) {
 
 fun drop(table: DBTable) {
     // TODO: add check
-    File(path + table.name).delete()
+    File(path+table.name).delete()
     // TODO: add logs
     getTableIndexes(table.name).forEach { dropIndex(it) }
 }
@@ -140,7 +135,7 @@ suspend fun index(tableName: String, column: String, reader: DBReader) = withCon
     addIndex(IndexInfo(tableName, column), indexData)
 }
 
-suspend fun execute(tkn: QLTerminate, channel: ByteWriteChannel, layout: DBLayout = PackedLayout()) {
+suspend fun execute(tkn: QLTerminate, channel: ByteWriteChannel, layout: DBLayout = SimpleLayout()) {
     when (tkn) {
         is QLSelect -> {
             select(tkn.qlData, tkn.qlFilter, channel, layout.getReader())
