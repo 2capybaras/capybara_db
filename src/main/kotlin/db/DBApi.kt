@@ -54,7 +54,6 @@ suspend fun select(qlData: QLData, qlFilter: QLFilter, channel: ByteWriteChannel
                 idx.entries.filter { it.key in a..b }.flatMap {  it.value }.forEach {
                     sb.append(reader.readRow((path+qlData.data.name), it+1).joinToString(separator = simpleColumnsDelimiter, postfix = "\n"))
                 }
-
             } else {
                 val table = reader.readTable((path + qlData.data.name))
                 val columns = table.columns
@@ -135,7 +134,7 @@ suspend fun index(tableName: String, column: String, reader: DBReader) = withCon
     addIndex(IndexInfo(tableName, column), indexData)
 }
 
-suspend fun execute(tkn: QLTerminate, channel: ByteWriteChannel, layout: DBLayout = SimpleLayout()) {
+suspend fun execute(tkn: QLTerminate, channel: ByteWriteChannel, layout: DBLayout = PackedLayout()) {
     when (tkn) {
         is QLSelect -> {
             select(tkn.qlData, tkn.qlFilter, channel, layout.getReader())
