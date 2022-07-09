@@ -26,10 +26,10 @@ suspend fun select(qlData: QLData, qlFilter: QLFilter, channel: ByteWriteChannel
         columns = qlData.columns
         if (!table.columns.containsAll(columns) || !table2.columns.containsAll(columns))
             throw Error("JOIN must have keys presented in both tables")
-        sb.append(table2.columns.filter { it -> !columns.contains(it) }.joinToString(separator = delimiter, prefix = delimiter, postfix = "\n"))
+        sb.append(table2.columns.filter { it -> !columns.contains(it) }
+            .joinToString(separator = delimiter, prefix = delimiter, postfix = "\n"))
         hashJoin(table, table2, qlData.columns, sb)
-    }
-    else {
+    } else {
         if (qlFilter.column == noFilter) {
             val a = qlFilter.range.a.toInt()
             val b = qlFilter.range.b.toInt()
@@ -48,11 +48,14 @@ suspend fun select(qlData: QLData, qlFilter: QLFilter, channel: ByteWriteChannel
             val b = qlFilter.range.b
             if (isPresented(IndexInfo(qlData.data.name, qlFilter.column))) {
                 sb.append("Indexed\n")
-                sb.append(reader.readColumns((path+qlData.data.name)).joinToString(separator = delimiter))
+                sb.append(reader.readColumns((path + qlData.data.name)).joinToString(separator = delimiter))
                 sb.append("\n")
                 val idx = getIndex(IndexInfo(qlData.data.name, qlFilter.column))!!
-                idx.entries.filter { it.key in a..b }.flatMap {  it.value }.forEach {
-                    sb.append(reader.readRow((path+qlData.data.name), it+1).joinToString(separator = delimiter, postfix = "\n"))
+                idx.entries.filter { it.key in a..b }.flatMap { it.value }.forEach {
+                    sb.append(
+                        reader.readRow((path + qlData.data.name), it + 1)
+                            .joinToString(separator = delimiter, postfix = "\n")
+                    )
                 }
 
             } else {
@@ -69,7 +72,7 @@ suspend fun select(qlData: QLData, qlFilter: QLFilter, channel: ByteWriteChannel
             }
         }
     }
-    channel.writeStringUtf8( sb.toString() )
+    channel.writeStringUtf8(sb.toString())
 }
 
 private fun hashJoin(table: DBTable, table2: DBTable, columns: List<String>, stringBuilder: StringBuilder) {
@@ -100,8 +103,10 @@ private fun hashJoin(table: DBTable, table2: DBTable, columns: List<String>, str
             for (i in row.indices) {
                 if (!table2IndexesOfKeys.contains(i)) rowUniq.add(row[i])
             }
-            stringBuilder.append(map[curr]!!.joinToString(separator = delimiter, postfix = delimiter)
-                    + rowUniq.joinToString(separator = delimiter, postfix = "\n"))
+            stringBuilder.append(
+                map[curr]!!.joinToString(separator = delimiter, postfix = delimiter)
+                        + rowUniq.joinToString(separator = delimiter, postfix = "\n")
+            )
         }
     }
 }
@@ -117,7 +122,7 @@ suspend fun insert(table: DBTable, writer: DBWriter) {
 
 fun drop(table: DBTable) {
     // TODO: add check
-    File(path+table.name).delete()
+    File(path + table.name).delete()
     // TODO: add logs
     getTableIndexes(table.name).forEach { dropIndex(it) }
 }
