@@ -1,14 +1,15 @@
+import domain.api.LocalExecutor
 import domain.layout.PackedLayout
-import domain.api.execute
+import domain.ql.ExpressionParser
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
-import domain.ql.ExpressionParser
 import java.io.FileNotFoundException
 import kotlin.system.exitProcess
 
 suspend fun serve() = withContext(Dispatchers.IO) {
+    val executor = LocalExecutor()
     val selectorManager = ActorSelectorManager(Dispatchers.IO)
     val serverSocket = aSocket(selectorManager).tcp().bind("127.0.0.1", 9002)
     val socket = serverSocket.accept()
@@ -22,7 +23,7 @@ suspend fun serve() = withContext(Dispatchers.IO) {
         else if (answer != "EXIT") {
             try {
                 launch(CoroutineName("executing $answer")) {
-                    execute(ExpressionParser(answer).parseTerminate(), sendChannel, layout)
+                    executor.execute(ExpressionParser(answer).parseTerminate(), sendChannel, layout)
                 }
             } catch (ex: FileNotFoundException) {
                 println("Server closed a connection: $ex")

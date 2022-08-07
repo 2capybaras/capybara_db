@@ -1,7 +1,8 @@
 package domain.model
 
+import domain.file.Page
+
 data class Table(
     val name: String = "",
-    val columns: List<String> = ArrayList(),
-    val data: List<List<Double>> = ArrayList()
+    val data: List<Page> = ArrayList()
 )

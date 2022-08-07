@@ -2,9 +2,6 @@ package domain.cache
 
 import java.lang.ref.WeakReference
 import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
-import kotlin.collections.HashSet
 
 object DBIndex {
     private val indexes = HashMap<IndexInfo, WeakReference<TreeMap<Double, ArrayList<Int>>>>()

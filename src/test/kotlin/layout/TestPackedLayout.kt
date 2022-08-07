@@ -1,39 +1,32 @@
 package layout
 
-import domain.model.Table
-import domain.layout.PackedLayoutReader
-import domain.layout.PackedLayoutWriter
+import domain.file.pageOf
+import domain.layout.PackedLayout
 import kotlinx.coroutines.runBlocking
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.io.File
-import kotlin.test.assertContentEquals
 
 class TestPackedLayout {
-    private val cols = listOf("a", "b")
-    private val data = listOf(
-        listOf(100.0, 2.0)
+    private val pages = listOf(
+        pageOf(100, 2, 3)
     )
+    private val layout = PackedLayout()
 
-    private val writer = PackedLayoutWriter()
-    private val reader = PackedLayoutReader()
+    private val writer = layout.getWriter()
+    private val reader = layout.getReader()
 
     @Test
-    fun testFilesCreated() = runBlocking {
-        writer.writeTable("tables/test", Table(
-            columns = cols,
-            data = data
-        )
-        )
+    fun testFilesCreated(): Unit = runBlocking {
+        writer.writeTable("tables/test", pages)
 
-        assert(File("tables/test.data").exists())
-        assert(File("tables/test.meta").exists())
+        assertThat(File("tables/test.data").exists())
     }
 
     @Test
-    fun testFilesAreReadable() = runBlocking {
-        val dbTable = reader.readTable("tables/test")
+    fun testFilesAreReadable() {
+        val table = reader.readTable("tables/test")
 
-        assertContentEquals(dbTable.data, data)
-        assertContentEquals(dbTable.columns, cols)
+        assertThat(table.data).isEqualTo(pages)
     }
 }
