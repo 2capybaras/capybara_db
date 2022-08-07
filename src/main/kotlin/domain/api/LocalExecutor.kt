@@ -4,7 +4,10 @@ import config.Config.path
 import domain.layout.Layout
 import domain.layout.LayoutReader
 import domain.layout.PackedLayout
-import domain.ql.*
+import domain.ql.QLRange
+import domain.ql.QLSelect
+import domain.ql.QLTableName
+import domain.ql.QLTerminate
 
 class LocalExecutor {
     fun execute(tkn: QLTerminate, layout: Layout = PackedLayout()): String {

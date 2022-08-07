@@ -1,6 +1,6 @@
 package domain.layout
 
-import domain.file.Page
+import domain.model.Page
 import domain.model.Table
 import java.io.EOFException
 import java.io.IOException

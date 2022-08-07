@@ -1,6 +1,6 @@
 package layout
 
-import domain.file.pageOf
+import domain.model.pageOf
 import domain.layout.PackedLayout
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
