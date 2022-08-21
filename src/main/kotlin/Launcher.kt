@@ -14,9 +14,9 @@ fun main() {
         print("> ")
         val query = readln()
         val parser = parserFactory.build(query)
-        parser.parse()
-        val command = executeCommandMapper[parser.rootStatement] ?: throw IllegalStateException("${parser.rootStatement}")
-        val result = executor.execute(command, parser.arguments)
+        val parseResult = parser.parse()
+        val command = executeCommandMapper[parseResult.rootStatement] ?: throw IllegalStateException("${parseResult.rootStatement}")
+        val result = executor.execute(command, parseResult.arguments)
         println(result)
     }
 }

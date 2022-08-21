@@ -5,14 +5,14 @@ import java.text.ParseException
 class QueryParser(private val query: String, private val rootToken: Map<String, RootToken> ) {
     private var pos = 0
     private val size = query.length
-    var rootStatement: String? = null
-    var arguments = emptyList<Any?>()
+    private val result = QueryParseResult()
 
-    fun parse() {
+    fun parse(): QueryParseResult {
         if (query.isEmpty()) throw EmptyQueryError
 
         val root = parseRootToken() ?: throw UnsupportedRootTokenError
-        arguments = parse(root)
+        result.arguments = parse(root)
+        return result
     }
 
     private fun skipSpaces() {
@@ -22,8 +22,8 @@ class QueryParser(private val query: String, private val rootToken: Map<String, 
     private fun isEndOfWord(): Boolean = query[pos].isWhitespace()
 
     private fun parseRootToken(): RootToken? {
-        rootStatement = parseAnyString()
-        return rootToken[rootStatement]
+        result.rootStatement = parseAnyString()
+        return rootToken[result.rootStatement]
     }
 
     private fun parse(tkn: Token): Any? {
