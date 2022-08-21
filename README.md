@@ -15,6 +15,6 @@ __________
 
 ## Query Examples
 ```sql
-SELECT FROM example INDEX 1
-SELECT FROM example FROM 2 TO 4
+SCAN example
+EXIT
 ```
