@@ -1,12 +1,13 @@
 import core.engine.LocalExecutor
 import core.query.QueryParserFactory
 import feature.Feature
+import feature.Scan
 import kotlinx.coroutines.runBlocking
 import kotlin.system.exitProcess
 
 fun main() = runBlocking {
     val executor = LocalExecutor()
-    val features: List<Feature> = emptyList()
+    val features: List<Feature> = listOf(Scan)
     val parserFactory = QueryParserFactory(features.map { it.queryCommand })
     val executeCommandMapper = features.associate { it.queryCommand.statement to it.executeCommand }
 
