@@ -1,7 +1,6 @@
-package layout
+package core.layout
 
-import domain.model.pageOf
-import domain.layout.PackedLayout
+import core.model.pageOf
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -18,14 +17,14 @@ class TestPackedLayout {
 
     @Test
     fun testFilesCreated(): Unit = runBlocking {
-        writer.writeTable("tables/test", pages)
+        writer.writeTable("test", pages)
 
-        assertThat(File("tables/test.data").exists())
+        assertThat(File("test.data").exists())
     }
 
     @Test
     fun testFilesAreReadable() {
-        val table = reader.readTable("tables/test")
+        val table = reader.readTable("test")
 
         assertThat(table.data).isEqualTo(pages)
     }

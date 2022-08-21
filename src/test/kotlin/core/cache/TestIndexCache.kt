@@ -1,7 +1,5 @@
-package cache
+package core.cache
 
-import domain.cache.DBIndex
-import domain.cache.IndexInfo
 import org.junit.jupiter.api.Test
 import java.util.*
 

@@ -1,4 +1,4 @@
-package domain.model
+package core.model
 
 import config.Config.defaultPageSize
 

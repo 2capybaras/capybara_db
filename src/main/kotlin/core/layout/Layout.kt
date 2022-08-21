@@ -1,4 +1,4 @@
-package domain.layout
+package core.layout
 
 interface Layout {
     fun getReader(): LayoutReader

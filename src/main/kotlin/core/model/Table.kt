@@ -1,4 +1,4 @@
-package domain.model
+package core.model
 
 data class Table(
     val name: String = "",
