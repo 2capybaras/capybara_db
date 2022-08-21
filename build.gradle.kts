@@ -8,7 +8,7 @@ plugins {
 group = "me.user"
 version = "1.0-SNAPSHOT"
 
-val ktor_version = "2.0.2"
+val ktor_version = "2.0.3"
 
 repositories {
     mavenCentral()
@@ -18,7 +18,8 @@ dependencies {
     implementation("io.ktor:ktor-server-core-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")
 
-    testImplementation(kotlin("test"))
+    testImplementation("org.junit.jupiter:junit-jupiter:5.9.0")
+    testImplementation("org.assertj:assertj-core:3.23.1")
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
 }
 
