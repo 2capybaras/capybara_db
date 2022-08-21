@@ -1,8 +1,8 @@
 import core.engine.LocalExecutor
 import core.query.QueryParserFactory
-import feature.Exit
+import feature.exit.Exit
 import feature.Feature
-import feature.Scan
+import feature.scan.Scan
 
 fun main() {
     val executor = LocalExecutor()
